@@ -3,6 +3,7 @@
 
 from dash import Dash, dcc, html, Input, Output, State, ctx
 import dash_daq as daq
+import pytz
 from datetime import datetime, timedelta
 from datetime import date
 import plotly.graph_objects as go
@@ -14,6 +15,7 @@ from plotly.graph_objs import Layout
 url_wan = 'http://178.199.62.136/data'
 url_lan = 'http://192.168.1.116/data'
 ticker = 'TemperatureInterieure'
+zone_zrh = pytz.timezone('Europe/Zurich')
 start_date = None
 end_date = None
 timeframe = 'day'
@@ -58,9 +60,8 @@ def append_data(df):
         temperature_exterieure = round(data[2]['value'], 1)
         masse = round(data[3]['value'], 1)
     # datetime object containing current date and time
-    now = datetime.now()
-    today = date.today()
-    
+    now = datetime.now(zone_zrh)
+    today = now.date()
     # dd/mm/YY H:M:S
     now_string = now.strftime('%d/%m/%Y %H:%M:%S')
 
@@ -386,13 +387,13 @@ def change_timeframe(value, df_dict):
     global start_date
     global end_date
     timeframe = value
-    end_date = date.today()
+    end_date = datetime.now(zone_zrh).date()
     if timeframe == 'day':
-        start_date = date.today()
+        start_date = datetime.now(zone_zrh).date()
     elif timeframe == 'week':
-        start_date = date.today() - timedelta(days=7)
+        start_date = datetime.now(zone_zrh).date() - timedelta(days=7)
     elif timeframe == 'month':
-        start_date = date.today() - timedelta(days=30)
+        start_date = datetime.now(zone_zrh).date() - timedelta(days=30)
 
     df_sensor = pd.DataFrame.from_dict(df_dict)
     if df_sensor.empty:
